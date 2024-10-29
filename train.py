@@ -114,7 +114,7 @@ def launch():
     args = parser.parse_args()
     # setup
     args.device = "cuda" if torch.cuda.is_available() else "cpu"
-    args.dataset_path = Path().cwd().parent / "data" / "celeb_A" # Path().cwd().parent / "data" / "celeb_A"
+    args.dataset_path = r"D:\pompous_penguin\data\celeb_A" # change to your image dataset path
     args.run_name = "DCGAN"
     args.epochs = 10
     # Hyperparameters following the DCGAN paper
