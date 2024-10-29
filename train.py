@@ -74,13 +74,6 @@ def train(args):
             # Logs
             pbar.set_description(f"Epoch [{epoch} / {args.epochs}]")
             pbar.set_postfix(loss_disc = loss_D.item(), loss_gen = loss_G.item())
-            scalars = {
-                "loss_disc_real": loss_real_D.item(),
-                "loss_disc_fake": loss_fake_D.item(),
-                "loss_disc": loss_D.item(),
-                "loss_gen": loss_G.item()
-            }
-            logger.add_scalars("Losses", scalars, global_step=epoch * l + batch_idx)
 
             # Evaluation
             if batch_idx % 50 == 0:
@@ -98,8 +91,8 @@ def train(args):
                         img_grid_real = torchvision.utils.make_grid(x[:32], normalize=True)
                         img_grid_fake = torchvision.utils.make_grid(fake[:32], normalize=True)
 
-                        logger.add_image("Real", img_grid_real, global_step=epoch * l + batch_idx)
-                        logger.add_image("Fake", img_grid_fake, global_step=epoch * l + batch_idx)
+                        logger.add_image("Real", img_grid_real, global_step=step)
+                        logger.add_image("Fake", img_grid_fake, global_step=step)
                 step += 1
 
         # save models' checkpoint after each epoch
@@ -110,21 +103,37 @@ def train(args):
     
 
 def launch():
-    parser = argparse.ArgumentParser()
-    args = parser.parse_args()
+    parser = argparse.ArgumentParser(description="Train a DCGAN on a dataset.")
+
     # setup
-    args.device = "cuda" if torch.cuda.is_available() else "cpu"
-    args.dataset_path = r"D:\pompous_penguin\data\celeb_A" # change to your image dataset path
-    args.run_name = "DCGAN"
-    args.epochs = 10
+    parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", 
+                        help="Device to run the training on (default: cuda if available, else cpu).")
+    parser.add_argument("--dataset_path", type=str, default=r"D:\pompous_penguin\data\celeb_A", 
+                        help="Path to the dataset (default: D:\\pompous_penguin\\data\\celeb_A).")
+    parser.add_argument("--run_name", type=str, default="DCGAN", 
+                        help="Name of the run (default: DCGAN).")
+    parser.add_argument("--epochs", type=int, default=500, 
+                        help="Number of epochs to train for (default: 500).")
     # Hyperparameters following the DCGAN paper
-    args.transforms=None # follow default transforms
-    args.batch_size = 128
-    args.img_size = 64
-    args.img_channels = 3 # can be changed wrt to images (althought DCGAN paper, input channels of images is to be 3)
-    args.z_dim = 100
-    args.lr = 2e-4
-    args.b1 = 0.5
+    parser.add_argument("--batch_size", type=int, default=128, 
+                        help="Batch size for training (default: 128).")
+    parser.add_argument("--img_size", type=int, default=64, 
+                        help="Size of the images (default: 64).")
+    parser.add_argument("--img_channels", type=int, default=3, # can be changed wrt to images (althought DCGAN paper, input channels of images is to be 3)
+                        help="Number of channels in the images (default: 3).")
+    parser.add_argument("--z_dim", type=int, default=100, 
+                        help="Dimension of the noise vector (default: 100).")
+    parser.add_argument("--lr", type=float, default=2e-4, 
+                        help="Learning rate for the optimizers (default: 2e-4).")
+    parser.add_argument("--b1", type=float, default=0.5, 
+                        help="Beta1 hyperparameter for Adam optimizer (default: 0.5).")
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Setup additional attributes if needed (e.g., transforms)
+    args.transforms = None  # Follow default transforms
+
+    # Train the model
     train(args)
 
 
